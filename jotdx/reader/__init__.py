@@ -6,6 +6,7 @@ from jotdx.reader.gbbq_reader import GbbqReader
 from jotdx.reader.block_reader import BlockReader
 from jotdx.reader.block_reader import CustomerBlockReader
 from jotdx.reader.history_financial_reader import HistoryFinancialReader
+from jotdx.reader.mootdx_reader import Reader
 
 __all__ = [
     'TdxDailyBarReader',
@@ -17,5 +18,6 @@ __all__ = [
     'GbbqReader',
     'BlockReader',
     'CustomerBlockReader',
-    'HistoryFinancialReader'
+    'HistoryFinancialReader',
+    'Reader',
 ]
