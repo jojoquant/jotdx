@@ -14,6 +14,7 @@ httpx = "^0.20.0"
 tenacity = "^8.0.1"
 
 [tool.poetry.dev-dependencies]
+autopep8 = "^1.5.7"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
