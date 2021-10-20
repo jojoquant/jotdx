@@ -34,8 +34,11 @@ class TdxExHqDailyBarReader(BaseReader):
         # 只传入了一个参数
         data = [self._df_convert(row) for row in self.parse_data_by_file(code_or_file)]
 
-        df = pd.DataFrame(data=data, columns=(
-            'date', 'open', 'high', 'low', 'close', 'amount', 'volume', 'jiesuan', 'hk_stock_amount'))
+        df = pd.DataFrame(
+            data=data,
+            columns=('date', 'open', 'high', 'low', 'close',
+                     'amount', 'volume', 'jiesuan', 'hk_stock_amount')
+        ).set_index('date')
         # df.index = pd.to_datetime(df.date)
         return df
 
