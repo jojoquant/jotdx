@@ -12,6 +12,9 @@ tqdm = "^4.62.3"
 loguru = "^0.5.3"
 httpx = "^0.20.0"
 tenacity = "^8.0.1"
+py-mini-racer = "^0.6.0"
+click = "^8.0.3"
+prettytable = "^2.2.1"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.7"
