@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jotdx"
-version = "0.1.0"
+version = "0.1.1"
 description = "Get data"
 authors = ["FangyangJz <fangyang.jing@hotmail.com>"]
 license = "MIT"

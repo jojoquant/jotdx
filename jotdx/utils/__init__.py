@@ -42,8 +42,8 @@ def get_stock_market(symbol='', string=False):
 
     market = None
 
-    if symbol.startswith(('sh', 'sz')):
-        market = symbol[:2]
+    if symbol.startswith(('sh', 'sz', 'SH', 'SZ')):
+        market = symbol[:2].lower()
 
     elif symbol.startswith(('50', '51', '60', '68', '90', '110', '113', '132', '204')):
         market = 'sh'
@@ -113,8 +113,14 @@ def to_data(v, **kwargs):
     """
 
     symbol = kwargs.get('symbol')
-    adjust = kwargs.get('adjust')
-    adjust = adjust if adjust in ['qfq', 'hfq'] else None
+    adjust = kwargs.get('adjust', None)
+
+    if adjust in ['01', 'qfq', 'before']:
+        adjust = 'qfq'
+    elif adjust in ['02', 'hfq', 'after']:
+        adjust = 'hfq'
+    else:
+        adjust = None
 
     # 空值
     if not v:
