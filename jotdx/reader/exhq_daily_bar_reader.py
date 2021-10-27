@@ -38,8 +38,18 @@ class TdxExHqDailyBarReader(BaseReader):
             data=data,
             columns=('date', 'open', 'high', 'low', 'close',
                      'amount', 'volume', 'jiesuan', 'hk_stock_amount')
-        ).set_index('date')
+        )
         # df.index = pd.to_datetime(df.date)
+
+        # TODO 通达信这里还是有点问题,
+        # (1) 按照现在这么写, 如果是星期一, 那么0点前的数据推到了星期日,
+        #  0点后到9点开盘前应该是上周五晚上的行情, 算作星期一凌晨
+        # 暂时不影响回测, 这里有个小坑注意
+        ddelay = datetime.timedelta(days=1)
+        df['date'] = pd.to_datetime(df['date']).apply(lambda x: x if 0 <= x.hour < 16 else x - ddelay)
+
+        df = df.set_index('date')
+
         return df
 
     def _df_convert(self, row):
