@@ -10,7 +10,7 @@ from jotdx.reader import TdxMinBarReader
 from jotdx import utils
 from jotdx.consts import TYPE_GROUP, TYPE_FLATS
 from jotdx.contrib.compat import MooTdxDailyBarReader
-from jotdx.logger import log
+
 from jotdx.utils import get_stock_market
 
 
@@ -55,7 +55,6 @@ class ReaderBase(ABC):
         :param suffix:
         :return: pd.dataFrame or None
         """
-        log.warning(f'symbol=>{symbol}')
 
         # 判断市场, 带#扩展市场
         if '#' in symbol:
@@ -65,18 +64,17 @@ class ReaderBase(ABC):
             market = get_stock_market(symbol, True)
 
         # 判断前缀(市场是sh和sz重置前缀)
-        symbol = market + symbol.lower().replace(market, '') if market.lower() in ['sh', 'sz'] else symbol
+        if market.lower() in ['sh', 'sz']:
+            symbol = market + symbol.lower().replace(market, '')
 
         # 判断后缀
         suffix = suffix if isinstance(suffix, list) else [suffix]
 
-        log.warning(f'symbol=>{symbol}')
-        log.warning(f'market=>{market}')
-        log.warning(f'suffix=>{suffix}')
-
+        # 调试使用
         if kwargs.get('debug'):
             return market, symbol, suffix
 
+        # 遍历扩展名
         for ex_ in suffix:
             ex_ = ex_.strip('.')
             vipdoc = Path(self.tdxdir) / 'vipdoc' / market / subdir / f'{symbol}.{ex_}'
@@ -146,7 +144,7 @@ class StdReader(ReaderBase):
 
         return CustomerBlockReader().get_df(str(vipdoc), types_) if vipdoc.is_dir() else None
 
-    def block(self, symbol='', group=False):
+    def block(self, symbol='', group=False, **kwargs):
         """ 获取板块数据
 
         参考: http://blog.sina.com.cn/s/blog_623d2d280102vt8y.html
@@ -162,8 +160,15 @@ class StdReader(ReaderBase):
         symbol = symbol.replace(suffix, '')
         suffix = suffix.strip('.')
 
-        vipdoc = Path(self.tdxdir) / 'T0002' / 'hq_cache' / f'{symbol}.{suffix}'
+        if 'incon' in symbol:
+            vipdoc = Path(self.tdxdir) / f'{symbol}.{suffix}'
+        else:
+            vipdoc = Path(self.tdxdir) / 'T0002' / 'hq_cache' / f'{symbol}.{suffix}'
+
         types_ = TYPE_GROUP if group else TYPE_FLATS
+
+        if kwargs.get('debug'):
+            return str(vipdoc)
 
         return BlockReader().get_df(str(vipdoc), types_) if vipdoc.exists() else None
 
