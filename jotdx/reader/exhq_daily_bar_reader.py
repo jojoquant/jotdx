@@ -55,6 +55,8 @@ class TdxExHqDailyBarReader(BaseReader):
     def _df_convert(self, row):
         t_date = row[0]
         year = int(t_date / 2048 + 2036)
+        year = (year - 32) if (year > datetime.datetime.now().year) else year
+
         month = int(t_date % 2048 / 100)
         day = t_date % 2048 % 100
 
