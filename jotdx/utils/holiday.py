@@ -13,7 +13,7 @@ from py_mini_racer import py_mini_racer
 from tenacity import stop_after_attempt, wait_fixed, retry
 
 from jotdx import get_config_path
-from jotdx.logger import log
+from jotdx.consts import return_last_value
 
 hk_js_decode = """
 function d(t) {
@@ -306,7 +306,7 @@ function d(t) {
 """
 
 
-@retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+@retry(wait=wait_fixed(2), retry_error_callback=return_last_value, stop=stop_after_attempt(5))
 def holiday(date=False, save=True) -> pd.DataFrame:
     """ 交易日历-历史数据
     :return: 交易日历
@@ -353,28 +353,6 @@ def holiday(date=False, save=True) -> pd.DataFrame:
         except ValueError:
             date = datetime.datetime.now().date()
 
-        log.debug(date)
-
         return temp_df.loc[temp_df['date'] == date].all().any()
 
     return temp_df
-
-
-if __name__ == '__main__':
-    res = holiday()
-    print(res)
-    # holiday = ['20181229-20190101']
-    # dates = Holiday('20190122')
-    #
-    # print(dates.date, dates.holiday)
-    # print("Class-Today: %s" % dates.getToday())
-    # print("Object-Today: %s" % dates.getToday())
-    #
-    # print(dates.getYesterday())
-    # print(dates.getTomorrow())
-    #
-    # print('--------------------')
-    # print(dates.getHolidayList())
-    #
-    # print("LastTradeDay: %s" % dates.getLastTradeDay())
-    # print("%s is TradeDay: %s" % (dates.date, dates.isTradeDay()))
