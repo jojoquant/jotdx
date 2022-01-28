@@ -9,7 +9,7 @@ from pathlib import Path
 from jotdx.consts import EX_HOSTS
 from jotdx.consts import GP_HOSTS
 from jotdx.consts import HQ_HOSTS
-from jotdx.logger import log
+from jotdx.logger import logger
 from jotdx.server import bestip
 from jotdx.utils import get_config_path
 
@@ -36,7 +36,7 @@ def setup():
         options = json.load(open(CONF, 'r', encoding='utf-8'))
         settings.update(options)
     except (json.JSONDecodeError, FileNotFoundError):
-        log.warning(f'未找到配置文件 {CONF}, 正在生成配置文件.')
+        logger.warning(f'未找到配置文件 {CONF}, 正在生成配置文件.')
         bestip() and setup()
 
     return True if settings else False

@@ -5,6 +5,8 @@
 
 
 import datetime
+import re
+import time
 from pathlib import Path
 
 import httpx
@@ -14,6 +16,7 @@ from tenacity import stop_after_attempt, wait_fixed, retry
 
 from jotdx import get_config_path
 from jotdx.consts import return_last_value
+from jotdx.logger import logger
 
 hk_js_decode = """
 function d(t) {
@@ -307,7 +310,7 @@ function d(t) {
 
 
 @retry(wait=wait_fixed(2), retry_error_callback=return_last_value, stop=stop_after_attempt(5))
-def holiday(date=False, save=True) -> pd.DataFrame:
+def holiday2(date=False, save=True) -> pd.DataFrame:
     """ 交易日历-历史数据
     :return: 交易日历
     :rtype: pandas.DataFrame
@@ -356,3 +359,39 @@ def holiday(date=False, save=True) -> pd.DataFrame:
         return temp_df.loc[temp_df['date'] == date].all().any()
 
     return temp_df
+
+
+def holiday(date=None, format_=None, country=None):
+    cache_file = get_config_path('holiday.plk')
+
+    format_ = format_ if format_ else "%Y-%m-%d"
+    country = country if country else '中国'
+
+    try:
+        if date:
+            date = datetime.datetime.strptime(date, format_).date()
+        else:
+            date = datetime.datetime.now().date()
+    except ValueError as ex:
+        logger.exception("日期或者日期格式错误!")
+        raise ex
+
+    if date.weekday() >= 5:
+        return True
+
+    if Path(cache_file).exists() and time.localtime(Path(cache_file).stat().st_mtime).tm_year == time.localtime(time.time()).tm_year:
+        df = pd.read_pickle(cache_file)
+    else:
+        res = httpx.get('https://www.tdx.com.cn/url/holiday/')
+        ret = re.findall(r'<textarea id="data" style="display:none;">([\s\w\d\W]+)</textarea>', res.text, re.M)[0].strip()
+        day = [d.split('|')[:4] for d in ret.split('\n')]
+
+        df = pd.DataFrame(day, columns=['日期', '节日', '国家', '交易所'], dtype=str)
+        df.index = pd.to_datetime(df['日期'].astype("str"), format='%Y%m%d')
+        df.to_pickle(cache_file)
+
+    if country not in list(set(df['国家'].values)):
+        raise ValueError(f'没有该国家`{country}`的交易日数据')
+
+    df = df[df['国家'] == country]
+    return not df[df.index.isin([date])].empty

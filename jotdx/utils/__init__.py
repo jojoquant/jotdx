@@ -8,9 +8,9 @@ import pandas as pd
 from pandas import DataFrame
 from tqdm import tqdm
 
-from jotdx.consts import MARKET_SH
+from jotdx.consts import MARKET_SH, MARKET_BJ
 from jotdx.consts import MARKET_SZ
-from jotdx.logger import log
+from jotdx.logger import logger
 from jotdx.utils.adjust import to_adjust
 
 
@@ -40,7 +40,7 @@ def get_stock_market(symbol='', string=False):
 
     assert isinstance(symbol, str), 'stock code need str type'
 
-    market = None
+    market = 'sh'
 
     if symbol.startswith(('sh', 'sz', 'SH', 'SZ')):
         market = symbol[:2].lower()
@@ -54,9 +54,21 @@ def get_stock_market(symbol='', string=False):
     elif symbol.startswith(('5', '6', '9', '7')):
         market = 'sh'
 
-    if string is False:
-        market = MARKET_SZ if market == 'sz' else MARKET_SH
+    elif symbol.startswith(('4', '8')):
+        market = 'bj'
 
+    if string is False:
+
+        if market == 'sh':
+            market = MARKET_SH
+
+        if market == 'sz':
+            market = MARKET_SZ
+
+        if market == 'bj':
+            market = MARKET_BJ
+
+    logger.debug(f'market=>{market}')
     return market
 
 
@@ -82,7 +94,7 @@ def gpcw(filepath):
         info_data = cw_file.read(calcsize('<264f'))
         cw_info = unpack('<264f', info_data)
 
-        log.debug(f'{code}, {cw_info}')
+        logger.debug(f'{code}, {cw_info}')
         return code, cw_info
 
 
@@ -99,8 +111,8 @@ def md5sum(downfile):
         md5_l.update(Path(downfile).read_bytes())
         return md5_l.hexdigest()
     except (IOError, FileNotFoundError) as e:
-        log.error(f'无法读取文件: {downfile}')
-        log.debug(e)
+        logger.error(f'无法读取文件: {downfile}')
+        logger.debug(e)
         return None
 
 
@@ -145,6 +157,14 @@ def to_data(v, **kwargs):
     if adjust and adjust in ['qfq', 'hfq'] and symbol:
         from jotdx.utils.adjust import fq_factor
         result = to_adjust(result, symbol=symbol, adjust=adjust)
+
+    if "datetime" in result.columns:
+        result.index = pd.to_datetime(result.datetime)
+    elif "date" in result.columns:
+        result.index = pd.to_datetime(result.date)
+
+    if "vol" in result.columns:
+        result['volume'] = result.vol
 
     return result
 
@@ -247,7 +267,7 @@ def block_new(tdxdir=None, name: str = None, symbol: list = None):
 
     # 判断目录是否存在
     if not Path(vipdoc).is_dir():
-        log.error(f'自定义板块目录错误: {vipdoc}')
+        logger.error(f'自定义板块目录错误: {vipdoc}')
         return False
 
     block_file = Path(vipdoc) / 'blocknew.cfg'
@@ -264,7 +284,7 @@ def block_new(tdxdir=None, name: str = None, symbol: list = None):
         names = [v for i, v in enumerate(names) if i % 2 == 0]
 
         if name in names:
-            log.error('自定义板块名称重复.')
+            logger.error('自定义板块名称重复.')
             raise Exception('自定义板块名称重复.')
 
     # 写 blk 文件

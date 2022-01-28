@@ -8,11 +8,11 @@ from jotdx.errors import TdxConnectionError
 from jotdx.heartbeat import HqHeartBeatThread
 from jotdx.reader import TdxDailyBarReader
 
-from jotdx.logger import log
+from jotdx.logger import logger
 
 
 class MooTdxDailyBarReader(TdxDailyBarReader):
-    # 感谢 bopomofo 的鼎力支持
+    """ 感谢 bopomofo 的鼎力支持 """
     SECURITY_TYPE = [
         'SH_A_STOCK',
         'SH_B_STOCK',
@@ -80,7 +80,7 @@ class MooTdxDailyBarReader(TdxDailyBarReader):
             if code_head in ['01', '10', '11', '12', '13', '14']:
                 return 'SH_BOND'
         else:
-            log.error('Unknown security exchange !\n')
+            logger.error('Unknown security exchange !\n')
             raise NotImplementedError
 
 
@@ -103,7 +103,7 @@ class MooBaseSocketClient(BaseSocketClient):
         self.client = TrafficStatSocket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.settimeout(time_out)
 
-        log.debug('connecting to server : %s on port :%d' % (ip, port))
+        logger.debug('connecting to server : %s on port :%d' % (ip, port))
 
         try:
             self.ip = ip
@@ -114,21 +114,21 @@ class MooBaseSocketClient(BaseSocketClient):
 
             self.client.connect((ip, port))
         except socket.timeout as e:
-            log.debug(e)
-            log.debug('connection expired')
+            logger.debug(e)
+            logger.debug('connection expired')
 
             if self.raise_exception:
                 raise TdxConnectionError('connection timeout error')
 
             return False
         except Exception as e:
-            log.debug(e)
+            logger.debug(e)
             if self.raise_exception:
                 raise TdxConnectionError('other errors')
 
             return False
 
-        log.debug('connected!')
+        logger.debug('connected!')
 
         if self.need_setup:
             self.setup()
@@ -146,19 +146,19 @@ class MooBaseSocketClient(BaseSocketClient):
             self.stop_event.set()
 
         if self.client:
-            log.debug('disconnecting')
+            logger.debug('disconnecting')
 
             try:
                 self.client.shutdown(socket.SHUT_RDWR)
                 self.client.close()
                 self.client = None
             except Exception as e:
-                log.debug(str(e))
+                logger.debug(str(e))
 
                 if self.raise_exception:
                     raise TdxConnectionError('disconnect err')
 
-            log.debug('disconnected')
+            logger.debug('disconnected')
 
     def setup(self):
         pass
