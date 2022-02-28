@@ -130,4 +130,4 @@ def bestip(console=False, limit=5, sync=True) -> None:
 
 
 if __name__ == '__main__':
-    bestip()
+    bestip(sync=False)

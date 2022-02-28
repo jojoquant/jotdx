@@ -7,7 +7,8 @@ reader = Reader.factory(market='ext', tdxdir='C:/new_jyplug')
 
 # 读取日线数据
 # df = reader.daily(symbol='600000')
-df = reader.minute(symbol='30#RBL8')
+df1 = reader.minute(symbol='30#RBL8')
+df2 = reader.fzline(symbol='30#RBL8')
 print(1)
 
 if __name__ == '__main__':
