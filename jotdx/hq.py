@@ -33,7 +33,6 @@ from jotdx.parser.get_security_quotes import GetSecurityQuotesCmd
 from jotdx.parser.get_transaction_data import GetTransactionData
 from jotdx.parser.get_xdxr_info import GetXdXrInfo
 from jotdx.parser.setup_commands import SetupCmd1, SetupCmd2, SetupCmd3
-from jotdx.util import get_real_trade_date, trade_date_sse
 
 if __name__ == '__main__':
     sys.path.append(os.path.dirname(
