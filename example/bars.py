@@ -1,3 +1,4 @@
+from jotdx.params import TDXParams
 from jotdx.quotes import Quotes
 from mock_params import Interval_to_frequency_dict, Interval
 from jotdx.utils import to_data
@@ -46,7 +47,9 @@ def ext_bars_pytdx_test():
     # 59.175.238.38 : 7727
     with api.connect('59.175.238.38', 7727):
         df1 = api.to_df(api.get_markets())
-        df2 = api.to_df(api.get_instrument_info(0, 100))
+        df2 = api.to_df(api.get_instrument_info(0, 800))
+        df3 = api.to_df(api.get_instrument_quote_list(30, 3, count=800))
+        df4 = api.to_df(api.get_instrument_quote_list(30, 3, start=100, count=800))
         print(2)
 
 
