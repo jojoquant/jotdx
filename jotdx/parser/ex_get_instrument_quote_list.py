@@ -52,7 +52,7 @@ class GetInstrumentQuoteList(BaseParser):
                     pos = self.extract_futures(market, code, body_buf, datalist, pos)
                 except Exception as e:
                     print(e)
-                print(pos)
+                # print(pos)
             elif self.category == 2:
                 """
                    market  category   name short_name

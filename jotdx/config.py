@@ -3,13 +3,13 @@
 使用前必须先调用 init() 。
 """
 import copy
-import json
+import simplejson as json
 from pathlib import Path
 
 from jotdx.consts import EX_HOSTS
 from jotdx.consts import GP_HOSTS
 from jotdx.consts import HQ_HOSTS
-from jotdx.logger import log
+from jotdx.logger import logger
 from jotdx.server import bestip
 from jotdx.utils import get_config_path
 
@@ -26,7 +26,8 @@ CONF = get_config_path('config.json')
 
 
 def setup():
-    """ 将 yaml 里的配置文件导入到 config.py 中
+    """
+    将 yaml 里的配置文件导入到 config.py 中
 
     :return: bool，true 表示数据导入成功。
     """
@@ -36,7 +37,7 @@ def setup():
         options = json.load(open(CONF, 'r', encoding='utf-8'))
         settings.update(options)
     except (json.JSONDecodeError, FileNotFoundError):
-        log.warning(f'未找到配置文件 {CONF}, 正在生成配置文件.')
+        logger.warning(f'未找到配置文件 {CONF}, 正在生成配置文件.')
         bestip() and setup()
 
     return True if settings else False

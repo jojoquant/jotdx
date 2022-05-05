@@ -22,7 +22,7 @@ from jotdx.parser.ex_get_minute_time_data import GetMinuteTimeData
 from jotdx.parser.ex_get_history_minute_time_data import GetHistoryMinuteTimeData
 from jotdx.parser.ex_get_transaction_data import GetTransactionData
 from jotdx.parser.ex_get_history_transaction_data import GetHistoryTransactionData
-from jotdx.parser.ex_get_instrument_bars import GetInstrumentBars
+from jotdx.parser.ex_get_instrument_bars import GetInstrumentBars, GetInstrumentBarData
 from jotdx.parser.ex_get_instrument_info import GetInstrumentInfo
 from jotdx.parser.ex_get_history_instrument_bars_range import GetHistoryInstrumentBarsRange
 from jotdx.parser.ex_get_instrument_quote_list import GetInstrumentQuoteList
@@ -78,6 +78,13 @@ class TdxExHq_API(BaseSocketClient):
     @update_last_ack_time
     def get_instrument_bars(self, category, market, code, start=0, count=700):
         cmd = GetInstrumentBars(self.client)
+        cmd.setParams(category, market, code, start=start, count=count)
+        return cmd.call_api()
+
+    # add by fangyang
+    @update_last_ack_time
+    def get_instrument_bar_data(self, category, market, code, start=0, count=700):
+        cmd = GetInstrumentBarData(self.client)
         cmd.setParams(category, market, code, start=start, count=count)
         return cmd.call_api()
 

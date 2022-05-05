@@ -99,7 +99,7 @@ class GetTransactionData(BaseParser):
                 ("hour", hour),
                 ("minute", minute),
                 ("second", second),
-                ("price", price),
+                ("price", price/1000),
                 ("volume", volume),
                 ("zengcang", zengcang),
                 ("nature", nature),

@@ -1,15 +1,16 @@
 import asyncio
 import functools
-import json
 import socket
 import time
 from functools import partial
+
+import simplejson as json
 
 from jotdx.consts import CONFIG
 from jotdx.consts import EX_HOSTS
 from jotdx.consts import GP_HOSTS
 from jotdx.consts import HQ_HOSTS
-from jotdx.logger import log
+from jotdx.logger import logger
 from jotdx.utils import get_config_path
 
 hosts = {
@@ -22,15 +23,27 @@ results = {k: [] for k in hosts}
 
 
 def callback(res, key):
+    """
+    异步回调函数
+
+    :param res:
+    :param key:
+    """
     result = res.result()
 
     if result.get('time'):
         results[key].append(result)
 
-    log.debug('callback: {}', res.result())
+    logger.debug('callback: {}', res.result())
 
 
-def connect(proxy):
+def connect(proxy: dict) -> dict:
+    """
+    连接服务器函数
+
+    :param proxy: 代理IP信息
+    :return:
+    """
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(3)
@@ -42,23 +55,28 @@ def connect(proxy):
 
         proxy['time'] = (time.perf_counter() - start) * 1000
 
-        log.info('{addr}:{port} 验证通过，响应时间：{time} ms.'.format(**proxy))
+        logger.info('{addr}:{port} 验证通过，响应时间：{time} ms.'.format(**proxy))
     except socket.timeout as ex:
-        log.info('{addr},{port} time out.'.format(**proxy))
+        logger.info('{addr},{port} time out.'.format(**proxy))
         proxy['time'] = None
     except ConnectionRefusedError as ex:
-        log.info('{addr},{port} 验证失败.'.format(**proxy))
+        logger.info('{addr},{port} 验证失败.'.format(**proxy))
         proxy['time'] = None
     finally:
         return proxy
 
 
-async def verify(proxy):
-    result = await asyncio.get_event_loop().run_in_executor(None, functools.partial(connect, proxy=proxy))
-    return result
+async def verify(proxy: dict):
+    """
+    检验代理连通性函数
+
+    :param proxy: 代理IP信息
+    :return:
+    """
+    return await asyncio.get_event_loop().run_in_executor(None, functools.partial(connect, proxy=proxy))
 
 
-def Server(index=None, limit=5, console=False, sync=True):
+def server(index=None, limit=5, console=False, sync=True):
     _hosts = hosts[index]
 
     def async_event():
@@ -119,11 +137,11 @@ def bestip(console=False, limit=5, sync=True) -> None:
 
     for index in ['HQ', 'EX', 'GP']:
         try:
-            data = Server(index=index, limit=limit, console=console, sync=sync)
+            data = server(index=index, limit=limit, console=console, sync=sync)
             if data:
                 default['BESTIP'][index] = data[0]
         except RuntimeError as ex:
-            log.error('请手动运行`python -m mootdx bestip`')
+            logger.error('请手动运行`python -m mootdx bestip`')
             break
 
     json.dump(default, open(config_, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)

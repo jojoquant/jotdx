@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jotdx"
-version = "0.1.3"
+version = "0.1.9"
 description = "Get data"
 authors = ["FangyangJz <fangyang.jing@hotmail.com>"]
 license = "MIT"
@@ -8,6 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.7.1"
 pandas = "^1.3.4"
+numpy = "^1.21"
 tqdm = "^4.62.3"
 loguru = "^0.5.3"
 httpx = "^0.20.0"
@@ -15,6 +16,8 @@ tenacity = "^8.0.1"
 py-mini-racer = "^0.6.0"
 click = "^8.0.3"
 prettytable = "^2.2.1"
+joconst = "^0.1.10"
+simplejson = "^3.17.6"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.7"

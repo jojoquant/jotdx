@@ -78,7 +78,7 @@ class TdxDailyBarReader(BaseReader):
 
         new_row = (
             datestr,
-            row[1] * coefficient[0],  # * 0.01 * 1000 , zipline need 1000 times to original price
+            row[1] * coefficient[0], # * 0.01 * 1000 , zipline need 1000 times to original price
             row[2] * coefficient[0],
             row[3] * coefficient[0],
             row[4] * coefficient[0],
@@ -99,38 +99,35 @@ class TdxDailyBarReader(BaseReader):
                 return "SZ_B_STOCK"
             elif code_head in ["39"]:
                 return "SZ_INDEX"
-            elif code_head in ["15", "16"]:
+            elif code_head in ["15", "16", "18"]:
                 return "SZ_FUND"
             elif code_head in ["10", "11", "12", "13", "14"]:
                 return "SZ_BOND"
         elif exchange == self.SECURITY_EXCHANGE[1]:
-            if code_head in ["60"]:
+
+
+            if code_head in ["60", "68"]: # 688XXX科创板
                 return "SH_A_STOCK"
             elif code_head in ["90"]:
                 return "SH_B_STOCK"
             elif code_head in ["00", "88", "99"]:
                 return "SH_INDEX"
-            elif code_head in ["50", "51"]:
+            elif code_head in ["50", "51", "58"]:
                 return "SH_FUND"
-            elif code_head in ["01", "10", "11", "12", "13", "14"]:
+            elif code_head in ["01", "10", "11", "12", "13", "14", "20"]:
                 return "SH_BOND"
         else:
             print("Unknown security exchange !\n")
             raise NotImplementedError
 
     SECURITY_EXCHANGE = ["sz", "sh"]
-    SECURITY_TYPE = ["SH_A_STOCK", "SH_B_STOCK", "SH_INDEX", "SH_FUND", "SH_BOND", "SZ_A_STOCK", "SZ_B_STOCK",
-                     "SZ_INDEX", "SZ_FUND", "SZ_BOND"]
-    SECURITY_COEFFICIENT = {"SH_A_STOCK": [0.01, 0.01], "SH_B_STOCK": [0.001, 0.01], "SH_INDEX": [0.01, 1.0],
-                            "SH_FUND": [0.001, 1.0], "SH_BOND": [0.001, 1.0], "SZ_A_STOCK": [0.01, 0.01],
-                            "SZ_B_STOCK": [0.01, 0.01], "SZ_INDEX": [0.01, 1.0], "SZ_FUND": [0.001, 0.01],
-                            "SZ_BOND": [0.001, 0.01]}
-
+    SECURITY_TYPE = ["SH_A_STOCK", "SH_B_STOCK", "SH_INDEX", "SH_FUND", "SH_BOND", "SZ_A_STOCK", "SZ_B_STOCK", "SZ_INDEX", "SZ_FUND", "SZ_BOND"]
+    SECURITY_COEFFICIENT = {"SH_A_STOCK": [0.01, 0.01], "SH_B_STOCK": [0.001, 0.01], "SH_INDEX": [0.01, 1.0], "SH_FUND": [0.001, 1.0], "SH_BOND": [0.001, 1.0], "SZ_A_STOCK": [0.01, 0.01], "SZ_B_STOCK": [0.01, 0.01], "SZ_INDEX": [0.01, 1.0], "SZ_FUND": [0.001, 0.01], "SZ_BOND": [0.001, 0.01]}
 
 if __name__ == '__main__':
     tdx_reader = TdxDailyBarReader('/Users/rainx/tmp/vipdoc/')
     try:
-        # for row in tdx_reader.parse_data_by_file('/Volumes/more/data/vipdoc/sh/lday/sh600000.day'):
+        #for row in tdx_reader.parse_data_by_file('/Volumes/more/data/vipdoc/sh/lday/sh600000.day'):
         #    print(row)
         for row in tdx_reader.get_kline_by_code('000001', 'sz'):
             print(row)

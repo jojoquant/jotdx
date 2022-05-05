@@ -61,11 +61,14 @@ my result:
 
 """
 class GetInstrumentQuote(BaseParser):
-
+    at1 = 0
     def setParams(self, market, code):
-        pkg = bytearray.fromhex("01 01 08 02 02 01 0c 00 0c 00 fa 23")
+        # pkg = bytearray.fromhex("01 01 08 02 02 01 0c 00 0c 00 fa 23")
+        pkg = bytearray.fromhex("01 01 00 29 00 01 0e 00  0e 00 fb 23 01 00")
+        pkg.extend(struct.pack('<B', market))
         code = code.encode("utf-8")
-        pkg.extend(struct.pack('<B9s', market, code))
+        pkg.extend(struct.pack('<9s', code))
+
         self.send_pkg = pkg
 
     def parseResponse(self, body_buf):
@@ -75,8 +78,9 @@ class GetInstrumentQuote(BaseParser):
             return []
 
         pos = 0
-        market, code = struct.unpack('<B9s', body_buf[pos: pos+10])
-        pos += 10
+        # market, code = struct.unpack('<B9s', body_buf[pos: pos+10])
+        market,_, code = struct.unpack('<BH9s', body_buf[pos: pos+12])
+        pos += 12
 
         # jump 4
         pos += 4
@@ -90,7 +94,7 @@ class GetInstrumentQuote(BaseParser):
          bv1, bv2, bv3, bv4, bv5,
          a1, a2, a3, a4, a5,
          av1, av2, av3, av4, av5
-         ) = struct.unpack('<fffffIIIIIIIIIfffffIIIIIfffffIIIII', body_buf[pos: pos+136])
+         ) = struct.unpack('<5f9I5f5I5f5I', body_buf[pos: pos+136])
 
 
         return [
