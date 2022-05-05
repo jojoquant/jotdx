@@ -1,5 +1,4 @@
 import hashlib
-from datetime import datetime
 from pathlib import Path
 from struct import calcsize
 from struct import unpack
@@ -186,6 +185,10 @@ def to_file(df, filename=None):
     # 目录不存在创建目录
     Path(path_name).is_dir() or Path(path_name).mkdir(parents=True)
 
+    # methods = {'to_json': ['.json']}
+    # method = [k for k, v in methods if extension in v][0]
+    # getattr(pd, method)(filename)
+
     if extension == '.csv':
         return df.to_csv(filename, encoding='utf-8', index=False)
 
@@ -242,60 +245,13 @@ def get_config_path(config='config.json'):
     return str(filename)
 
 
-def block_new(tdxdir=None, name: str = None, symbol: list = None):
-    """
-    自定义模块写入函数
+def get_frequency(frequency) -> int:
+    FREQUENCY = ['5m', '15m', '30m', '1h', 'day', 'week', 'mon', '1m', '1m', 'day', '3mon', 'year']
 
-    :param tdxdir: tdx 路径
-    :param name: 自定义板块名称
-    :param symbol: 自定义板块股票代码集合
-    :return: bool
-    """
+    try:
+        if isinstance(frequency, str):
+            frequency = FREQUENCY.index(frequency)
+    except ValueError:
+        frequency = 0
 
-    if not tdxdir:
-        return False
-
-    # 自定义板块名称未传入则自动按时间生成名称
-    if not name:
-        name = datetime.now().strftime('%Y%m%d%H%M%S')
-
-    # 按时间生成 blk 文件名
-    file = datetime.now().strftime('%Y%m%d%H%M%S')
-
-    vipdoc = Path(tdxdir, 'T0002', 'blocknew')
-    symbol = list(set(symbol))
-
-    # 判断目录是否存在
-    if not Path(vipdoc).is_dir():
-        logger.error(f'自定义板块目录错误: {vipdoc}')
-        return False
-
-    block_file = Path(vipdoc) / 'blocknew.cfg'
-
-    # 文件不存在就创建
-    if not block_file.exists():
-        block_file.write_text('')
-
-    # 判断名字是否重名
-    with open(block_file, 'rb') as fp:
-        names = fp.read().decode('gbk', 'ignore')
-        names = names.split('\x00')
-        names = [x for x in names if x != '']
-        names = [v for i, v in enumerate(names) if i % 2 == 0]
-
-        if name in names:
-            logger.error('自定义板块名称重复.')
-            raise Exception('自定义板块名称重复.')
-
-    # 写 blk 文件
-    with open(f'{vipdoc}/{file}.blk', 'w') as fp:
-        fp.write('\n'.join(symbol))
-
-    # 写 blocknew.cfg 文件
-    with open(block_file, 'ab') as fp:
-        data = name + ((50 - len(name.encode('gbk', 'ignore'))) * '\x00')
-        data += file + ((70 - len(file.encode('gbk', 'ignore'))) * '\x00')
-        data = bytes(data.encode('gbk', 'ignore'))
-        fp.write(data)
-
-    return True
+    return frequency
