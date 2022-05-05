@@ -17,6 +17,7 @@ py-mini-racer = "^0.6.0"
 click = "^8.0.3"
 prettytable = "^2.2.1"
 joconst = "^0.1.10"
+simplejson = "^3.17.6"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.7"
