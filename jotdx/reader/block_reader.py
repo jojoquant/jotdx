@@ -203,7 +203,7 @@ class CustomerBlockReader(BaseReader):
 
 
 if __name__ == '__main__':
-    df2 = pd.DataFrame(BlockReader().get_df("C:/new_tdx/T0002/hq_cache/block_zs.dat","block_zs.dat", BlockReader_TYPE_GROUP))
+    df2 = pd.DataFrame(BlockReader().get_df("C:\\new_jyplug\\T0002\\hq_cache\\block_zs.dat", "block_zs.dat", BlockReader_TYPE_GROUP))
     # data2=set([i for i in df2.blockname ])
     # df3 = CustomerBlockReader().get_df('C:/Users/fit/Desktop/blocknew')
     # print(df3)

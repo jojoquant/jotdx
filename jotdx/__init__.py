@@ -5,4 +5,4 @@ from jotdx.consts import HQ_HOSTS
 from jotdx.server import server
 from jotdx.utils import get_config_path
 
-__version__ = '0.1.9'
+__version__ = '0.1.10'
