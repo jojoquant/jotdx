@@ -1,16 +1,15 @@
 import os
+import pandas as pd
 import random
 import shutil
 import tempfile
 from pathlib import Path
+from jotdx.hq import TdxHq_API
 from struct import calcsize
 from struct import unpack
 
-import pandas as pd
-from jotdx.hq import TdxHq_API
-
 from .base import BaseFinancial
-
+from .columns import columns
 from ..logger import logger
 
 
@@ -31,7 +30,8 @@ class FinancialReader(object):
         with open(filename, 'rb') as fp:
             data = crawler.parse(download_file=fp)
 
-        return crawler.to_df(data)
+        data = crawler.to_df(data)
+        return data
 
 
 class FinancialList(BaseFinancial):
@@ -218,7 +218,7 @@ class Financial(BaseFinancial):
 
         df = pd.DataFrame(data=data, columns=column)
         df.set_index('code', inplace=True)
-
+        df.columns = columns
         logger.debug(df)
 
         return df

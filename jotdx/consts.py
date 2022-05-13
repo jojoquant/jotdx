@@ -35,6 +35,8 @@ MAX_TRANSACTION_COUNT = 2000
 # K线数据最多800条
 MAX_KLINE_COUNT = 800
 
+FREQUENCY = ['5m', '15m', '30m', '1h', 'day', 'week', 'mon', 'ex_1m', '1m', 'dk', '3mon', 'year']
+
 # 板块相关参数
 BLOCK_SZ = 'block_zs.dat'
 BLOCK_FG = 'block_fg.dat'
@@ -82,7 +84,6 @@ def return_last_value(retry_state):
     """return the result of the last call attempt"""
     return retry_state.outcome.result()
 
-
 # 5MIN = 0
 # 15MIN = 1
 # 30MIN = 2
@@ -95,4 +96,3 @@ def return_last_value(retry_state):
 # RI_K = 9
 # 3MONTH = 10
 # YEARLY = 11
-
