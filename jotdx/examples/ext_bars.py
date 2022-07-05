@@ -51,7 +51,7 @@ def ext_bars_test():
     market = TdxMarket.SHFE
 
     start = 0
-    offset = 1000
+    offset = 1000  # max value is 700
 
     mootdx_method(symbol=symbol, frequency=frequency, offset=offset, start=start, market=market)
     pytdx_method(symbol=symbol, frequency=frequency, offset=offset, start=start, market=market)

@@ -97,23 +97,25 @@ class GetInstrumentBars(BaseParser):
             pos += 28
 
             datetime_value = gen_datetime(year, month, day, hour, minute)
-
-            kline = OrderedDict([
-                ("open", open_price),
-                ("high", high),
-                ("low", low),
-                ("close", close),
-                ("position", position),
-                ("trade", trade),
-                ("price", price),
-                ("year", year),
-                ("month", month),
-                ("day", day),
-                ("hour", hour),
-                ("minute", minute),
-                ("datetime", datetime_value),
-                ("amount", amount),
-            ])
+            if trade > 0:
+                kline = OrderedDict([
+                    ("open", open_price),
+                    ("high", high),
+                    ("low", low),
+                    ("close", close),
+                    ("position", position),
+                    ("trade", trade),
+                    ("price", price),
+                    ("year", year),
+                    ("month", month),
+                    ("day", day),
+                    ("hour", hour),
+                    ("minute", minute),
+                    ("datetime", datetime_value),
+                    ("amount", amount),
+                ])
+            else:
+                continue
 
             klines.append(kline)
 

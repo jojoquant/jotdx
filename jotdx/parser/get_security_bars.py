@@ -168,7 +168,7 @@ class GetSecurityBarDataCmd(GetSecurityBarsCmd):
                 interval=TDX_INTERVAL_MAP[self.category],
                 exchange=TDX_JONPY_MARKET_MAP[self.market],
                 open_price=open, high_price=high, low_price=low, close_price=close,
-                volume=vol, open_interest=dbvol,
+                volume=vol, turnover=dbvol,
                 datetime=datetime.datetime(year, month, day, hour, minute)
             )
 
