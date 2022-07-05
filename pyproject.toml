@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jotdx"
-version = "0.1.11"
+version = "0.1.12"
 description = "Get data"
 authors = ["FangyangJz <fangyang.jing@hotmail.com>"]
 license = "MIT"
@@ -16,7 +16,7 @@ tenacity = "^8.0.1"
 py-mini-racer = "^0.6.0"
 click = "^8.0.3"
 prettytable = "^2.2.1"
-joconst = "^0.1.10"
+joconst = "^0.1.13"
 simplejson = "^3.17.6"
 
 [tool.poetry.dev-dependencies]
@@ -25,3 +25,8 @@ autopep8 = "^1.5.7"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "tinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+default = true

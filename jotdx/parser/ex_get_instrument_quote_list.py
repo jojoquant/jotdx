@@ -37,7 +37,7 @@ class GetInstrumentQuoteList(BaseParser):
             return []
 
         datalist = []
-        if self.category not in [2,3] :
+        if self.category not in [2, 3] :
             return NotImplementedError("暂时不支持期货,港股之外的品类")
 
         for i in range(num):

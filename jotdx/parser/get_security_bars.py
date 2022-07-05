@@ -1,8 +1,10 @@
 # coding=utf-8
-
-
 from jotdx.parser.base import BaseParser
 from jotdx.helper import get_datetime, get_volume, get_price
+from joconst.object import BarData
+from joconst.maps import TDX_JONPY_MARKET_MAP, TDX_INTERVAL_MAP
+
+import datetime
 from collections import OrderedDict
 import struct
 import six
@@ -17,13 +19,17 @@ recv: b1cb74000c01086401002d05aa00aa000a006ec73301b28c011e3254a081ad4816d6984d6f
 
 """
 
+
 class GetSecurityBarsCmd(BaseParser):
 
     def setParams(self, category, market, code, start, count):
-        if type(code) is six.text_type:
-            code = code.encode("utf-8")
 
         self.category = category
+        self.market = market
+        self.code = code
+
+        if type(code) is six.text_type:
+            code = code.encode("utf-8")
 
         values = (
             0x10c,
@@ -99,4 +105,94 @@ class GetSecurityBarsCmd(BaseParser):
         return klines
 
     def _cal_price1000(self, base_p, diff):
-        return float(base_p + diff)/1000
+        return float(base_p + diff) / 1000
+
+
+class GetSecurityBarDataCmd(GetSecurityBarsCmd):
+    def parseResponse(self, body_buf):
+        pos = 0
+
+        (ret_count,) = struct.unpack("<H", body_buf[0: 2])
+        pos += 2
+
+        klines = []
+
+        pre_diff_base = 0
+        for i in range(ret_count):
+            year, month, day, hour, minute, pos = get_datetime(self.category, body_buf, pos)
+
+            price_open_diff, pos = get_price(body_buf, pos)
+            price_close_diff, pos = get_price(body_buf, pos)
+
+            price_high_diff, pos = get_price(body_buf, pos)
+            price_low_diff, pos = get_price(body_buf, pos)
+
+            (vol_raw,) = struct.unpack("<I", body_buf[pos: pos + 4])
+            vol = get_volume(vol_raw)
+
+            pos += 4
+            (dbvol_raw,) = struct.unpack("<I", body_buf[pos: pos + 4])
+            dbvol = get_volume(dbvol_raw)
+            pos += 4
+
+            open = self._cal_price1000(price_open_diff, pre_diff_base)
+
+            price_open_diff = price_open_diff + pre_diff_base
+
+            close = self._cal_price1000(price_open_diff, price_close_diff)
+            high = self._cal_price1000(price_open_diff, price_high_diff)
+            low = self._cal_price1000(price_open_diff, price_low_diff)
+
+            pre_diff_base = price_open_diff + price_close_diff
+
+            #### 为了避免python处理浮点数的时候，浮点数运算不精确问题，这里引入了多余的代码
+
+            # kline = OrderedDict([
+            #     ("open", open),
+            #     ("close", close),
+            #     ("high", high),
+            #     ("low", low),
+            #     ("vol", vol),
+            #     ("amount", dbvol),
+            #     ("year", year),
+            #     ("month", month),
+            #     ("day", day),
+            #     ("hour", hour),
+            #     ("minute", minute),
+            #     ("datetime", "%d-%02d-%02d %02d:%02d" % (year, month, day, hour, minute))
+            # ])
+
+            bar_data = BarData(
+                gateway_name="jotdx",
+                symbol=self.code,
+                interval=TDX_INTERVAL_MAP[self.category],
+                exchange=TDX_JONPY_MARKET_MAP[self.market],
+                open_price=open, high_price=high, low_price=low, close_price=close,
+                volume=vol, open_interest=dbvol,
+                datetime=datetime.datetime(year, month, day, hour, minute)
+            )
+
+            klines.append(bar_data)
+        return klines
+
+
+if __name__ == '__main__':
+    from jotdx.hq import TdxHq_API
+    from jotdx.utils import get_stock_market
+    from jotdx.utils.best_ip_async import select_best_ip_async
+    from jotdx.params import TDXParams
+
+    code = "600123"
+    market = get_stock_market(code)
+
+    ip_port_dict = select_best_ip_async(_type="stock")
+    api = TdxHq_API()
+    with api.connect(ip=ip_port_dict['ip'], port=ip_port_dict['port']):
+        bar_data_list = api.get_security_bar_data(
+            category=TDXParams.KLINE_TYPE_15MIN,
+            market=market,
+            code=code,
+            start=0,
+            count=800
+        )
+        print(1)

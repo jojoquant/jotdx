@@ -66,6 +66,7 @@ class GetInstrumentBars(BaseParser):
 
         if type(code) is six.text_type:
             code = code.encode("utf-8")
+
         pkg = bytearray.fromhex('01 01 08 6a 01 01 16 00 16 00')
         pkg.extend(bytearray.fromhex("ff 23"))
 
@@ -146,7 +147,7 @@ class GetInstrumentBarData(GetInstrumentBars):
                     gateway_name="jotdx",
                     symbol=self.code,
                     interval=TDX_INTERVAL_MAP[self.category],
-                    exchange=TDX_JONPY_MARKET_MAP[TdxMarket(self.market)],
+                    exchange=TDX_JONPY_MARKET_MAP[self.market],
                     open_price=open_price, high_price=high, low_price=low, close_price=close,
                     volume=trade, open_interest=position,
                     datetime=datetime_value

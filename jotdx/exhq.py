@@ -77,6 +77,9 @@ class TdxExHq_API(BaseSocketClient):
 
     @update_last_ack_time
     def get_instrument_bars(self, category, market, code, start=0, count=700):
+        '''fangyang
+        category 在这里代表 kline_type, 即 period
+        '''
         cmd = GetInstrumentBars(self.client)
         cmd.setParams(category, market, code, start=start, count=count)
         return cmd.call_api()
@@ -126,6 +129,9 @@ class TdxExHq_API(BaseSocketClient):
 
     @update_last_ack_time
     def get_instrument_quote_list(self, market, category, start=0, count=80):
+        ''' fangyang
+        category 这里表示 get_markets() 中获取的类别信息
+        '''
         cmd = GetInstrumentQuoteList(self.client)
         cmd.setParams(market, category, start, count)
         return cmd.call_api()
@@ -136,9 +142,12 @@ class TdxExHq_API(BaseSocketClient):
 
 if __name__ == '__main__':
     import pprint
+    from jotdx.utils.best_ip_async import select_best_ip_async
+
+    ip_port_dict = select_best_ip_async(_type="future")
 
     api = TdxExHq_API()
-    with api.connect('121.14.110.210', 7727):
+    with api.connect(ip_port_dict['ip'], ip_port_dict['port']):
         # log.info("获取市场代码")
         # pprint.pprint(api.to_df(api.get_markets()))
         # log.info("查询市场中商品数量")

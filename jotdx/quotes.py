@@ -464,6 +464,9 @@ class ExtQuotes(BaseQuotes):
         self.client = TdxExHq_API(**kwargs)
         self.client.connect(*self.bestip)
 
+        global instance
+        instance = self
+
     @staticmethod
     def validate(market, symbol):
         """
