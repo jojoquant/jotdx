@@ -24,11 +24,9 @@ from jotdx.heartbeat import HqHeartBeatThread
 import functools
 from jotdx.parser.raw_parser import RawParser
 
-
 CONNECT_TIMEOUT = 5.000
 RECV_HEADER_LEN = 0x10
 DEFAULT_HEARTBEAT_INTERVAL = 10.0
-
 
 """
 In [7]: 0x7e
@@ -86,6 +84,7 @@ def update_last_ack_time(func):
         如果raise_exception=False 返回None
         """
         return ret
+
     return wrapper
 
 
@@ -101,6 +100,7 @@ class DefaultRetryStrategy(RetryStrategy):
     返回下次重试的间隔时间, 单位为秒，我们会使用 time.sleep在这里同步等待之后进行重新connect,然后再重新发起
     源请求，直到gen结束。
     """
+
     @classmethod
     def gen(cls):
         # 默认重试4次 ... 时间间隔如下
@@ -265,9 +265,13 @@ class BaseSocketClient(object):
         self.close()
 
     def to_df(self, v):
-        if isinstance(v, list):
+        if v is None:
+            return pd.DataFrame(data=[])
+        elif isinstance(v, list):
             return pd.DataFrame(data=v)
         elif isinstance(v, dict):
             return pd.DataFrame(data=[v, ])
+        elif isinstance(v, pd.DataFrame):
+            return v
         else:
             return pd.DataFrame(data=[{'value': v}])
