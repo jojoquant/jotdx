@@ -29,8 +29,8 @@ def pytdx_method(market_symbol_list):
     api = TdxHq_API()
     with api.connect(ip=ip, port=port):
         df5 = api.get_security_quotes(market_symbol_list)
-
-        return df5
+        tickdata_list = api.get_security_tick_data(market_symbol_list)
+        return df5, tickdata_list
 
 
 def std_bars_test():
@@ -47,7 +47,7 @@ def std_bars_test():
     offset = 800
 
     df1 = mootdx_method(symbol_list=symbol)
-    df2 = pytdx_method(market_symbol_list=market_symbol_list)
+    df2, ticks = pytdx_method(market_symbol_list=market_symbol_list)
     print(1)
 
 
