@@ -29,7 +29,7 @@ from jotdx.parser.get_minute_time_data import GetMinuteTimeData
 from jotdx.parser.get_security_bars import GetSecurityBarsCmd, GetSecurityBarDataCmd
 from jotdx.parser.get_security_count import GetSecurityCountCmd
 from jotdx.parser.get_security_list import GetSecurityList
-from jotdx.parser.get_security_quotes import GetSecurityQuotesCmd
+from jotdx.parser.get_security_quotes import GetSecurityQuotesCmd, GetSecurityTickDataCmd
 from jotdx.parser.get_transaction_data import GetTransactionData
 from jotdx.parser.get_xdxr_info import GetXdXrInfo
 from jotdx.parser.setup_commands import SetupCmd1, SetupCmd2, SetupCmd3
@@ -77,6 +77,12 @@ class TdxHq_API(BaseSocketClient):
     @update_last_ack_time
     def get_security_quotes(self, all_stock):
         cmd = GetSecurityQuotesCmd(self.client, lock=self.lock)
+        cmd.setParams(all_stock)
+        return cmd.call_api()
+
+    @update_last_ack_time
+    def get_security_tick_data(self, all_stock):
+        cmd = GetSecurityTickDataCmd(self.client, lock=self.lock)
         cmd.setParams(all_stock)
         return cmd.call_api()
 

@@ -1,0 +1,2 @@
+
+GATEWAY_NAME = "jotdx"

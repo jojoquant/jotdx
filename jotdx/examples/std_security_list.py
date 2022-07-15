@@ -21,6 +21,7 @@ def mootdx_method():
 
     quotes.close()
     print(1)
+    return sse_stocks
 
 
 def pytdx_method():
@@ -43,12 +44,14 @@ def pytdx_method():
         # df4 = api.to_df(api.get_instrument_quote_list(30, 3, start=100, count=800))  # count max is 100
 
         print(1)
+    return df1
 
 
 def std_bars_test():
 
-    # mootdx_method()
-    pytdx_method()
+    dd1 = mootdx_method()
+    dd2 = pytdx_method()
+    print(1)
 
 
 if __name__ == '__main__':

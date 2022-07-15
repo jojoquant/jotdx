@@ -1,10 +1,16 @@
 # coding=utf-8
 
-from jotdx.parser.base import BaseParser
-from jotdx.helper import get_datetime, get_volume, get_price
+from datetime import datetime
 from collections import OrderedDict
 import struct
 import six
+
+from joconst.maps import TDX_JONPY_MARKET_MAP
+from jotdx.parser.base import BaseParser
+from jotdx.helper import get_volume, get_price
+from joconst.object import TickData
+
+from jotdx.parser.gateway import GATEWAY_NAME
 
 
 class GetSecurityQuotesCmd(BaseParser):
@@ -116,7 +122,7 @@ class GetSecurityQuotesCmd(BaseParser):
             #  active2) = struct.unpack("<HbbbbHH", body_buf[pos: pos + 10])
             # pos += 10
 
-            reversed_bytes4 = struct.unpack("<H", body_buf[pos:pos+2])
+            reversed_bytes4 = struct.unpack("<H", body_buf[pos:pos + 2])
             pos += 2
             reversed_bytes5, pos = get_price(body_buf, pos)
             reversed_bytes6, pos = get_price(body_buf, pos)
@@ -138,9 +144,9 @@ class GetSecurityQuotesCmd(BaseParser):
                 ("servertime", self._format_time('%s' % reversed_bytes0)),
                 ("reversed_bytes0", reversed_bytes0),
                 ("reversed_bytes1", reversed_bytes1),
-                ("vol", vol),
-                ("cur_vol", cur_vol),
-                ("amount", amount),
+                ("vol", vol),  # 当日总量
+                ("cur_vol", cur_vol),  # 当前 tick 成交量
+                ("amount", amount),  # 当日总成交额
                 ("s_vol", s_vol),
                 ("b_vol", b_vol),
                 ("reversed_bytes2", reversed_bytes2),
@@ -170,14 +176,14 @@ class GetSecurityQuotesCmd(BaseParser):
                 ("reversed_bytes6", reversed_bytes6),
                 ("reversed_bytes7", reversed_bytes7),
                 ("reversed_bytes8", reversed_bytes8),
-                ("reversed_bytes9", reversed_bytes9/100.0),  # 涨速
+                ("reversed_bytes9", reversed_bytes9 / 100.0),  # 涨速
                 ("active2", active2)
             ])
             stocks.append(one_stock)
         return stocks
 
     def _cal_price(self, base_p, diff):
-        return float(base_p + diff)/100
+        return float(base_p + diff) / 100
 
     def _format_time(self, time_stamp):
         """
@@ -188,22 +194,159 @@ class GetSecurityQuotesCmd(BaseParser):
         if int(time_stamp[-6:-4]) < 60:
             time += '%s:' % time_stamp[-6:-4]
             time += '%06.3f' % (
-                int(time_stamp[-4:]) * 60 / 10000.0
+                    int(time_stamp[-4:]) * 60 / 10000.0
             )
         else:
             time += '%02d:' % (
-                int(time_stamp[-6:]) * 60 / 1000000
+                    int(time_stamp[-6:]) * 60 / 1000000
             )
             time += '%06.3f' % (
-                (int(time_stamp[-6:]) * 60 % 1000000) * 60 / 1000000.0
+                    (int(time_stamp[-6:]) * 60 % 1000000) * 60 / 1000000.0
             )
         return time
 
 
+class GetSecurityTickDataCmd(GetSecurityQuotesCmd):
+    def parseResponse(self, body_buf):
+        pos = 0
+        pos += 2  # skip b1 cb
+        (num_stock,) = struct.unpack("<H", body_buf[pos: pos + 2])
+        pos += 2
+        stocks = []
+        now_date_str = str(datetime.now().date())
+
+        for _ in range(num_stock):
+            # print(body_buf[pos:])
+            # b'\x00000001\x95\n\x87\x0e\x01\x01\x05\x00\xb1\xb9\xd6\r\xc7\x0e\x8d\xd7\x1a\x84\x04S\x9c<M\xb6\xc8\x0e\x97\x8e\x0c\x00\xae\n\x00\x01\xa0\x1e\x9e\xb3\x03A\x02\x84\xf9\x01\xa8|B\x03\x8c\xd6\x01\xb0lC\x04\xb7\xdb\x02\xac\x7fD\x05\xbb\xb0\x01\xbe\xa0\x01y\x08\x01GC\x04\x00\x00\x95\n'
+            (market, code, active1) = struct.unpack(
+                "<B6sH", body_buf[pos: pos + 9])
+            pos += 9
+            price, pos = get_price(body_buf, pos)
+            last_close_diff, pos = get_price(body_buf, pos)
+            open_diff, pos = get_price(body_buf, pos)
+            high_diff, pos = get_price(body_buf, pos)
+            low_diff, pos = get_price(body_buf, pos)
+            # 不确定这里应该是用 get_price 跳过还是直接跳过4个bytes
+            # if price == 0 and last_close_diff == 0 and open_diff == 0 and high_diff == 0 and low_diff == 0:
+            #     # 这个股票当前应该无法获取信息, 这个时候，这个值一般是0 或者 100
+            #     #reversed_bytes0 = body_buf[pos: pos + 1]
+            #     #pos += 1
+            #     # 感觉这里应该都可以用 get_price ，但是由于一次性改动影响比较大，所以暂时只针对没有行情的股票做改动
+            #     reversed_bytes0, pos = get_price(body_buf, pos)
+            # else:
+            #     reversed_bytes0 = body_buf[pos: pos + 4]
+            #     pos += 4
+            reversed_bytes0, pos = get_price(body_buf, pos)
+            # reversed_bytes0, pos = get_price(body_buf, pos)
+            # 应该是 -price
+            reversed_bytes1, pos = get_price(body_buf, pos)
+            # print('reversed_bytes1:' + str(reversed_bytes1)  + ",price" + str(price))
+            # assert (reversed_bytes1 == -price)
+            vol, pos = get_price(body_buf, pos)
+            cur_vol, pos = get_price(body_buf, pos)
+            (amount_raw,) = struct.unpack("<I", body_buf[pos: pos + 4])
+            amount = get_volume(amount_raw)
+            pos += 4
+            s_vol, pos = get_price(body_buf, pos)
+            b_vol, pos = get_price(body_buf, pos)
+            reversed_bytes2, pos = get_price(body_buf, pos)
+            reversed_bytes3, pos = get_price(body_buf, pos)
+
+            bid1, pos = get_price(body_buf, pos)
+            ask1, pos = get_price(body_buf, pos)
+            bid_vol1, pos = get_price(body_buf, pos)
+            ask_vol1, pos = get_price(body_buf, pos)
+
+            bid2, pos = get_price(body_buf, pos)
+            ask2, pos = get_price(body_buf, pos)
+            bid_vol2, pos = get_price(body_buf, pos)
+            ask_vol2, pos = get_price(body_buf, pos)
+
+            bid3, pos = get_price(body_buf, pos)
+            ask3, pos = get_price(body_buf, pos)
+            bid_vol3, pos = get_price(body_buf, pos)
+            ask_vol3, pos = get_price(body_buf, pos)
+
+            bid4, pos = get_price(body_buf, pos)
+            ask4, pos = get_price(body_buf, pos)
+            bid_vol4, pos = get_price(body_buf, pos)
+            ask_vol4, pos = get_price(body_buf, pos)
+
+            bid5, pos = get_price(body_buf, pos)
+            ask5, pos = get_price(body_buf, pos)
+            bid_vol5, pos = get_price(body_buf, pos)
+            ask_vol5, pos = get_price(body_buf, pos)
+
+            # (reversed_bytes4, reversed_bytes5, reversed_bytes6,
+            #  reversed_bytes7, reversed_bytes8, reversed_bytes9,
+            #  active2) = struct.unpack("<HbbbbHH", body_buf[pos: pos + 10])
+            # pos += 10
+
+            reversed_bytes4 = struct.unpack("<H", body_buf[pos:pos + 2])
+            pos += 2
+            reversed_bytes5, pos = get_price(body_buf, pos)
+            reversed_bytes6, pos = get_price(body_buf, pos)
+            reversed_bytes7, pos = get_price(body_buf, pos)
+            reversed_bytes8, pos = get_price(body_buf, pos)
+            (reversed_bytes9, active2) = struct.unpack(
+                "<hH", body_buf[pos: pos + 4])
+            pos += 4
+
+            one_stock = TickData(
+                gateway_name=GATEWAY_NAME,
+                symbol=code.decode("utf-8"),
+                exchange=TDX_JONPY_MARKET_MAP[market],
+                datetime=datetime.strptime(
+                    f"{now_date_str} {self._format_time('%s' % reversed_bytes0)}", "%Y-%m-%d %H:%M:%S.%f"
+                ),  # 这里使用 servertime
+                name="",
+                volume=vol,
+                turnover=amount,
+                last_price=self._cal_price(price, 0),
+                last_volume=cur_vol,
+                open_price=self._cal_price(price, open_diff),
+                high_price=self._cal_price(price, high_diff),
+                low_price=self._cal_price(price, low_diff),
+                pre_close=self._cal_price(price, last_close_diff),
+                bid_price_1=self._cal_price(price, bid1),
+                bid_price_2=self._cal_price(price, bid2),
+                bid_price_3=self._cal_price(price, bid3),
+                bid_price_4=self._cal_price(price, bid4),
+                bid_price_5=self._cal_price(price, bid5),
+                ask_price_1=self._cal_price(price, ask1),
+                ask_price_2=self._cal_price(price, ask2),
+                ask_price_3=self._cal_price(price, ask3),
+                ask_price_4=self._cal_price(price, ask4),
+                ask_price_5=self._cal_price(price, ask5),
+                bid_volume_1=bid_vol1,
+                bid_volume_2=bid_vol2,
+                bid_volume_3=bid_vol3,
+                bid_volume_4=bid_vol4,
+                bid_volume_5=bid_vol5,
+                ask_volume_1=ask_vol1,
+                ask_volume_2=ask_vol2,
+                ask_volume_3=ask_vol3,
+                ask_volume_4=ask_vol4,
+                ask_volume_5=ask_vol5,
+                localtime=datetime.now()
+            )
+            stocks.append(one_stock)
+        return stocks
+
+
 if __name__ == '__main__':
     from jotdx.hq import TdxHq_API
+    from jotdx.utils.best_ip_async import select_best_ip_async
+
+    ip_port_dict = select_best_ip_async(_type="stock")
+    ip = ip_port_dict['ip']
+    port = ip_port_dict['port']
+
     api = TdxHq_API()
-    with api.connect():
-        #print(api.to_df(api.get_security_quotes([(0, '102672'), (0, '002672')])))
+    with api.connect(ip=ip, port=port):
+        # print(api.to_df(api.get_security_quotes([(0, '102672'), (0, '002672')])))
         print(api.to_df(api.get_security_quotes(
+            [(0, '101612'), (0, '002672')])))
+
+        print(api.to_df(api.get_security_tick_data(
             [(0, '101612'), (0, '002672')])))

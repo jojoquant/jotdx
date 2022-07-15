@@ -63,6 +63,7 @@ if __name__ == '__main__':
     ip = ip_port_dict['ip']
     port = ip_port_dict['port']
 
+    print(f"{ip} : {port}")
     api = TdxExHq_API()
     api.connect(ip=ip, port=port)
     ext_bars_test()

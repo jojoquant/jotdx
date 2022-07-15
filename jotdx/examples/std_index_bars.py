@@ -1,3 +1,4 @@
+import pandas as pd
 from joconst.maps import INTERVAL_TDX_MAP
 from joconst.object import Interval
 from joconst.constant import TdxMarket
@@ -13,8 +14,6 @@ def mootdx_method(symbol, frequency, offset, start, market):
     df = quotes.bars(
         symbol=symbol, frequency=frequency, offset=offset, start=start
     )
-
-    # quotes.transaction()
 
     # quotes.bars 中封装的是如下操作,
     # 但是实际调用的时候却是使用期货的函数 get_instrument_bars, 非常奇怪
@@ -40,11 +39,20 @@ def pytdx_method(symbol, frequency, offset, start, market):
     api = TdxHq_API()
     with api.connect(ip=ip, port=port):
 
-        df5 = api.to_df(
-            api.get_security_bars(
-                category=frequency, market=market, code=symbol, start=start, count=offset
+        all_df = pd.DataFrame()
+        while True:
+            df5 = api.to_df(
+                api.get_index_bars(
+                    category=frequency, market=market, code=symbol, start=start, count=offset
+                )
             )
-        )
+
+            if df5.empty:
+                break
+
+            all_df = pd.concat([df5, all_df])
+            start += offset
+            print(start)
 
         bar_data_list = api.get_security_bar_data(
             category=frequency, market=market, code=symbol, start=start, count=offset
@@ -59,15 +67,15 @@ def pytdx_method(symbol, frequency, offset, start, market):
 def std_bars_test():
     # 也可以使用
     # frequency = TDXParams.KLINE_TYPE_15MIN
-    frequency = INTERVAL_TDX_MAP[Interval.MINUTE_15]
+    frequency = INTERVAL_TDX_MAP[Interval.DAILY]
 
-    symbol = "123075"
-    market = get_stock_market(symbol=symbol)
+    symbol = "000001"
+    market = TdxMarket.SSE
 
     start = 0
     offset = 800
 
-    mootdx_method(symbol=symbol, frequency=frequency, offset=offset, start=start, market=market)
+    # mootdx_method(symbol=symbol, frequency=frequency, offset=offset, start=start, market=market)
     pytdx_method(symbol=symbol, frequency=frequency, offset=offset, start=start, market=market)
 
 

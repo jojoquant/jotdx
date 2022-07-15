@@ -11,6 +11,8 @@ from joconst import TdxMarket
 from joconst.object import BarData
 from joconst.maps import TDX_JONPY_MARKET_MAP, TDX_INTERVAL_MAP
 
+from jotdx.parser.gateway import GATEWAY_NAME
+
 
 def gen_datetime(year: int, month: int, day: int, hour: int, minute: int) -> datetime:
     datetime_value = datetime.datetime(year, month, day, hour, minute)
@@ -146,7 +148,7 @@ class GetInstrumentBarData(GetInstrumentBars):
             # 清理 volume 为 0 的 bar
             if trade > 0:
                 bar_data = BarData(
-                    gateway_name="jotdx",
+                    gateway_name=GATEWAY_NAME,
                     symbol=self.code,
                     interval=TDX_INTERVAL_MAP[self.category],
                     exchange=TDX_JONPY_MARKET_MAP[self.market],
