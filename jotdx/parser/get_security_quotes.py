@@ -76,6 +76,7 @@ class GetSecurityQuotesCmd(BaseParser):
             # else:
             #     reversed_bytes0 = body_buf[pos: pos + 4]
             #     pos += 4
+
             reversed_bytes0, pos = get_price(body_buf, pos)
             # reversed_bytes0, pos = get_price(body_buf, pos)
             # 应该是 -price
@@ -132,6 +133,10 @@ class GetSecurityQuotesCmd(BaseParser):
                 "<hH", body_buf[pos: pos + 4])
             pos += 4
 
+            # ("servertime", self._format_time('%s' % reversed_bytes0))
+            # 解析过来是 "14:29:39.234", 服务器时间
+            # 但是可转债无法解析, 所以统一采用 本地时间
+            #
             one_stock = OrderedDict([
                 ("market", market),
                 ("code", code.decode("utf-8")),
@@ -141,7 +146,8 @@ class GetSecurityQuotesCmd(BaseParser):
                 ("open", self._cal_price(price, open_diff)),
                 ("high", self._cal_price(price, high_diff)),
                 ("low", self._cal_price(price, low_diff)),
-                ("servertime", self._format_time('%s' % reversed_bytes0)),
+                # ("servertime", self._format_time('%s' % reversed_bytes0)),
+                ("servertime", datetime.now()),
                 ("reversed_bytes0", reversed_bytes0),
                 ("reversed_bytes1", reversed_bytes1),
                 ("vol", vol),  # 当日总量
@@ -292,13 +298,16 @@ class GetSecurityTickDataCmd(GetSecurityQuotesCmd):
                 "<hH", body_buf[pos: pos + 4])
             pos += 4
 
+            datetime_value = datetime.now()
+
             one_stock = TickData(
                 gateway_name=GATEWAY_NAME,
                 symbol=code.decode("utf-8"),
                 exchange=TDX_JONPY_MARKET_MAP[market],
-                datetime=datetime.strptime(
-                    f"{now_date_str} {self._format_time('%s' % reversed_bytes0)}", "%Y-%m-%d %H:%M:%S.%f"
-                ),  # 这里使用 servertime
+                # datetime=datetime.strptime(
+                #     f"{now_date_str} {self._format_time('%s' % reversed_bytes0)}", "%Y-%m-%d %H:%M:%S.%f"
+                # ),  # 这里使用 servertime ....!!! 可转债失效, 故使用本地时间
+                datetime=datetime_value,
                 name="",
                 volume=vol,
                 turnover=amount,
@@ -328,7 +337,7 @@ class GetSecurityTickDataCmd(GetSecurityQuotesCmd):
                 ask_volume_3=ask_vol3,
                 ask_volume_4=ask_vol4,
                 ask_volume_5=ask_vol5,
-                localtime=datetime.now()
+                localtime=datetime_value
             )
             stocks.append(one_stock)
         return stocks
