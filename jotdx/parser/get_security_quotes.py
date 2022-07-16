@@ -346,7 +346,8 @@ class GetSecurityTickDataCmd(GetSecurityQuotesCmd):
                 ask_volume_3=ask_vol3,
                 ask_volume_4=ask_vol4,
                 ask_volume_5=ask_vol5,
-                localtime=datetime_value
+                localtime=datetime_value,
+                server_time_str=self._format_time('%s' % reversed_bytes0)
             )
             stocks.append(one_stock)
         return stocks
