@@ -133,19 +133,21 @@ class GetSecurityQuotesCmd(BaseParser):
                 "<hH", body_buf[pos: pos + 4])
             pos += 4
 
+            code_str = code.decode("utf-8")
+            price_scale = get_price_scale(code_str)
+
             # ("servertime", self._format_time('%s' % reversed_bytes0))
             # 解析过来是 "14:29:39.234", 服务器时间
             # 但是可转债无法解析, 所以统一采用 本地时间
-            #
             one_stock = OrderedDict([
                 ("market", market),
-                ("code", code.decode("utf-8")),
+                ("code", code_str),
                 ("active1", active1),
-                ("price", self._cal_price(price, 0)),
-                ("last_close", self._cal_price(price, last_close_diff)),
-                ("open", self._cal_price(price, open_diff)),
-                ("high", self._cal_price(price, high_diff)),
-                ("low", self._cal_price(price, low_diff)),
+                ("price", self._cal_price(price, 0) * price_scale),
+                ("last_close", self._cal_price(price, last_close_diff) * price_scale),
+                ("open", self._cal_price(price, open_diff) * price_scale),
+                ("high", self._cal_price(price, high_diff) * price_scale),
+                ("low", self._cal_price(price, low_diff) * price_scale),
                 ("datetime", datetime.now()),
                 ("servertime", self._format_time('%s' % reversed_bytes0)),
                 ("reversed_bytes0", reversed_bytes0),
@@ -157,24 +159,24 @@ class GetSecurityQuotesCmd(BaseParser):
                 ("b_vol", b_vol),
                 ("reversed_bytes2", reversed_bytes2),
                 ("reversed_bytes3", reversed_bytes3),
-                ("bid1", self._cal_price(price, bid1)),
-                ("ask1", self._cal_price(price, ask1)),
+                ("bid1", self._cal_price(price, bid1) * price_scale),
+                ("ask1", self._cal_price(price, ask1) * price_scale),
                 ("bid_vol1", bid_vol1),
                 ("ask_vol1", ask_vol1),
-                ("bid2", self._cal_price(price, bid2)),
-                ("ask2", self._cal_price(price, ask2)),
+                ("bid2", self._cal_price(price, bid2) * price_scale),
+                ("ask2", self._cal_price(price, ask2) * price_scale),
                 ("bid_vol2", bid_vol2),
                 ("ask_vol2", ask_vol2),
-                ("bid3", self._cal_price(price, bid3)),
-                ("ask3", self._cal_price(price, ask3)),
+                ("bid3", self._cal_price(price, bid3) * price_scale),
+                ("ask3", self._cal_price(price, ask3) * price_scale),
                 ("bid_vol3", bid_vol3),
                 ("ask_vol3", ask_vol3),
-                ("bid4", self._cal_price(price, bid4)),
-                ("ask4", self._cal_price(price, ask4)),
+                ("bid4", self._cal_price(price, bid4) * price_scale),
+                ("ask4", self._cal_price(price, ask4) * price_scale),
                 ("bid_vol4", bid_vol4),
                 ("ask_vol4", ask_vol4),
-                ("bid5", self._cal_price(price, bid5)),
-                ("ask5", self._cal_price(price, ask5)),
+                ("bid5", self._cal_price(price, bid5) * price_scale),
+                ("ask5", self._cal_price(price, ask5) * price_scale),
                 ("bid_vol5", bid_vol5),
                 ("ask_vol5", ask_vol5),
                 ("reversed_bytes4", reversed_bytes4),
@@ -198,6 +200,8 @@ class GetSecurityQuotesCmd(BaseParser):
         """
         if len(time_stamp) == 10:
             time_stamp = time_stamp[:-2]
+        elif len(time_stamp) == 9:
+            time_stamp = time_stamp[:-1]
 
         time = time_stamp[:-6] + ':'
         if int(time_stamp[-6:-4]) < 60:
@@ -301,11 +305,13 @@ class GetSecurityTickDataCmd(GetSecurityQuotesCmd):
                 "<hH", body_buf[pos: pos + 4])
             pos += 4
 
+            code_str = code.decode("utf-8")
+            price_scale = get_price_scale(code_str)
             datetime_value = datetime.now()
 
             one_stock = TickData(
                 gateway_name=GATEWAY_NAME,
-                symbol=code.decode("utf-8"),
+                symbol=code_str,
                 exchange=TDX_JONPY_MARKET_MAP[market],
                 # datetime=datetime.strptime(
                 #     f"{now_date_str} {self._format_time('%s' % reversed_bytes0)}", "%Y-%m-%d %H:%M:%S.%f"
@@ -314,22 +320,22 @@ class GetSecurityTickDataCmd(GetSecurityQuotesCmd):
                 name="",
                 volume=vol,
                 turnover=amount,
-                last_price=self._cal_price(price, 0),
+                last_price=self._cal_price(price, 0) * price_scale,
                 last_volume=cur_vol,
-                open_price=self._cal_price(price, open_diff),
-                high_price=self._cal_price(price, high_diff),
-                low_price=self._cal_price(price, low_diff),
-                pre_close=self._cal_price(price, last_close_diff),
-                bid_price_1=self._cal_price(price, bid1),
-                bid_price_2=self._cal_price(price, bid2),
-                bid_price_3=self._cal_price(price, bid3),
-                bid_price_4=self._cal_price(price, bid4),
-                bid_price_5=self._cal_price(price, bid5),
-                ask_price_1=self._cal_price(price, ask1),
-                ask_price_2=self._cal_price(price, ask2),
-                ask_price_3=self._cal_price(price, ask3),
-                ask_price_4=self._cal_price(price, ask4),
-                ask_price_5=self._cal_price(price, ask5),
+                open_price=self._cal_price(price, open_diff) * price_scale,
+                high_price=self._cal_price(price, high_diff) * price_scale,
+                low_price=self._cal_price(price, low_diff) * price_scale,
+                pre_close=self._cal_price(price, last_close_diff) * price_scale,
+                bid_price_1=self._cal_price(price, bid1) * price_scale,
+                bid_price_2=self._cal_price(price, bid2) * price_scale,
+                bid_price_3=self._cal_price(price, bid3) * price_scale,
+                bid_price_4=self._cal_price(price, bid4) * price_scale,
+                bid_price_5=self._cal_price(price, bid5) * price_scale,
+                ask_price_1=self._cal_price(price, ask1) * price_scale,
+                ask_price_2=self._cal_price(price, ask2) * price_scale,
+                ask_price_3=self._cal_price(price, ask3) * price_scale,
+                ask_price_4=self._cal_price(price, ask4) * price_scale,
+                ask_price_5=self._cal_price(price, ask5) * price_scale,
                 bid_volume_1=bid_vol1,
                 bid_volume_2=bid_vol2,
                 bid_volume_3=bid_vol3,
@@ -344,6 +350,17 @@ class GetSecurityTickDataCmd(GetSecurityQuotesCmd):
             )
             stocks.append(one_stock)
         return stocks
+
+
+def get_price_scale(code_str: str):
+    price_scale = 1
+
+    if any(code_str.startswith(bond_code) for bond_code in ["110", "113", "127", "128", "123"]):
+        price_scale = 0.01
+    elif any(code_str.startswith(etf_code) for etf_code in ["58", "51", "56", "15"]):
+        price_scale = 0.1
+
+    return price_scale
 
 
 if __name__ == '__main__':
