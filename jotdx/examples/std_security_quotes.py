@@ -38,7 +38,7 @@ def std_bars_test():
     # frequency = TDXParams.KLINE_TYPE_15MIN
     frequency = INTERVAL_TDX_MAP[Interval.MINUTE_15]
 
-    symbol = ["000001","000550","600300", "123121"]
+    symbol = ["000001", "000550", "600300", "123122", "110060", "159888", "516110"]
     # 注意! 是两个不同的函数
     # market = get_stock_market(symbol=symbol)
     market_symbol_list = get_stock_markets(symbols=symbol)

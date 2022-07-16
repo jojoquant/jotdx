@@ -146,8 +146,8 @@ class GetSecurityQuotesCmd(BaseParser):
                 ("open", self._cal_price(price, open_diff)),
                 ("high", self._cal_price(price, high_diff)),
                 ("low", self._cal_price(price, low_diff)),
-                # ("servertime", self._format_time('%s' % reversed_bytes0)),
-                ("servertime", datetime.now()),
+                ("datetime", datetime.now()),
+                ("servertime", self._format_time('%s' % reversed_bytes0)),
                 ("reversed_bytes0", reversed_bytes0),
                 ("reversed_bytes1", reversed_bytes1),
                 ("vol", vol),  # 当日总量
@@ -196,6 +196,9 @@ class GetSecurityQuotesCmd(BaseParser):
         format time from reversed_bytes0
         by using method from https://github.com/rainx/jotdx/issues/187
         """
+        if len(time_stamp) == 10:
+            time_stamp = time_stamp[:-2]
+
         time = time_stamp[:-6] + ':'
         if int(time_stamp[-6:-4]) < 60:
             time += '%s:' % time_stamp[-6:-4]
