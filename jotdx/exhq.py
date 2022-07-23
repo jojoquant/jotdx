@@ -6,9 +6,7 @@
 
 
 import os
-import socket
 import sys
-import pandas as pd
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -26,11 +24,6 @@ from jotdx.parser.ex_get_instrument_bars import GetInstrumentBars, GetInstrument
 from jotdx.parser.ex_get_instrument_info import GetInstrumentInfo
 from jotdx.parser.ex_get_history_instrument_bars_range import GetHistoryInstrumentBarsRange
 from jotdx.parser.ex_get_instrument_quote_list import GetInstrumentQuoteList
-
-
-# from jotdx.params import TDXParams
-# import threading
-# import datetime
 from jotdx.base_socket_client import BaseSocketClient, update_last_ack_time
 
 
@@ -88,6 +81,7 @@ class TdxExHq_API(BaseSocketClient):
     @update_last_ack_time
     def get_instrument_bar_data(self, category, market, code, start=0, count=700):
         cmd = GetInstrumentBarData(self.client)
+        code = code.upper()  # 这里用大写 RBL8 做参数适配
         cmd.setParams(category, market, code, start=start, count=count)
         return cmd.call_api()
 

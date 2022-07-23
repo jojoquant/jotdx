@@ -149,7 +149,7 @@ class GetInstrumentBarData(GetInstrumentBars):
             if trade > 0:
                 bar_data = BarData(
                     gateway_name=GATEWAY_NAME,
-                    symbol=self.code,
+                    symbol=self.code.lower(),   # 这里用了小写 rbl8, 为了适配 vnpy_tts
                     interval=TDX_INTERVAL_MAP[self.category],
                     exchange=TDX_JONPY_MARKET_MAP[self.market],
                     open_price=open_price, high_price=high, low_price=low, close_price=close,
