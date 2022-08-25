@@ -356,9 +356,9 @@ class GetSecurityTickDataCmd(GetSecurityQuotesCmd):
 def get_price_scale(code_str: str):
     price_scale = 1
 
-    if any(code_str.startswith(bond_code) for bond_code in ["110", "113", "127", "128", "123"]):
+    if any(code_str.startswith(bond_code) for bond_code in ["110", "111", "113", "118", "123", "127", "128"]):
         price_scale = 0.01
-    elif any(code_str.startswith(etf_code) for etf_code in ["58", "51", "56", "15"]):
+    elif any(code_str.startswith(etf_code) for etf_code in ["51", "56", "58", "15"]):
         price_scale = 0.1
 
     return price_scale
